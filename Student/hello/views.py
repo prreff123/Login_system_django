@@ -1,20 +1,29 @@
 from django.shortcuts import render
 from .models import User
-from django.http import HttpResponse
+from django.http import HttpResponse,HttpResponseRedirect
+from django.contrib.auth import authenticate,login,logout
+from django.urls import reverse
 
 # Create your views here.
 def index(request):
-    return render(request,'index.html')
+    return render(request,'login.html')
 
-def login(request):
-    if request.method == 'POST':
-        email = request.POST['email']
-        password = request.POST['password']
-        name = User(email=email,password=password)
-        name.save()
-        return HttpResponse("<h1>User has been Added</h1>")
-    else:
-        return render(request,'login.html')
+def preform_login(request):
+    if request.method != "POST":
+        return HttpResponse("Method not allowed!")
+    else:    
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        name = authenticate(username=username,password=password)
+        if name is not None:
+            login(request, name)
+            return HttpResponseRedirect(reverse("admin_dashboard"))
+        else:
+            return HttpResponseRedirect("/")
 
-def signup(request):
-    return render(request,'signup.html')        
+def admin_dashboard(request):
+    return render(request,'admin_dashboard.html')        
+
+def delete(request):
+    logout(request)
+    return HttpResponseRedirect("/")    
